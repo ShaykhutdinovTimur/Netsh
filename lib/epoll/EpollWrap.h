@@ -28,11 +28,11 @@ private:
 
 public:
 
-    static int EPOLL_EXIT_FAILURE = -1;
-    static int EPOLL_EXIT_SUCCESS = 0;
+    static const int EPOLL_EXIT_FAILURE = -1;
+    static const int EPOLL_EXIT_SUCCESS = 0;
 
     EpollWrap() {
-        epollFd = new Socket(epoll_create1(0));
+        epollFd = Socket(epoll_create1(0));
         running = false;
     }
 
@@ -53,7 +53,7 @@ public:
     }
 
     ~EpollWrap() {
-        QMap<int, std::function<void(int)>> temp = callbacks;
+        QMap<Socket, std::function<void(int)>> temp = callbacks;
         for (auto cur = temp.begin(); cur != temp.end(); cur++) {
             cur.value()(EPOLLRDHUP);
         }

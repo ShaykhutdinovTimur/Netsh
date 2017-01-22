@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <unistd.h>
+#include <fcntl.h>
+#include "Utils.h"
 
 using std::shared_ptr;
 
@@ -24,7 +26,7 @@ class Socket {
 
 
 public:
-    Socket(int) {
+    Socket(int sock) {
         socket_ptr = std::make_shared<SubSocket>(sock);
     }
     Socket() {
@@ -35,6 +37,15 @@ public:
     }
     operator int () const {
         return socket_ptr->socket;
+    }
+
+    void make_nonblocking() {
+        int flags;
+        if ((flags = fcntl(socket_ptr->socket, F_GETFL, 0)) < 0)
+            error("Error in fcntl() (F_GETFL)");
+        flags |= O_NONBLOCK;
+        if (fcntl(socket_ptr->socket, F_SETFL, flags) < 0)
+            error("Error in fcntl() (F_SETFL)");
     }
 };
 

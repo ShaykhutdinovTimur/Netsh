@@ -11,5 +11,6 @@ SOURCES += main.cpp
 
 HEADERS += \
     lib/epoll/EpollWrap.h \
-    lib/Socket.h
+    lib/Socket.h \
+    lib/Utils.h
 
