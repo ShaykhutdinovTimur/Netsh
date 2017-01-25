@@ -3,40 +3,27 @@
 
 #include <stdio.h>
 #include <iostream>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 
-void error(std::string s) {
-    std::cerr << s << std::endl;
-    exit(EXIT_FAILURE);
+void error(std::string reason, bool mustExit = true) {
+    std::cerr << reason << std::endl;
+    if (mustExit) {
+        exit(EXIT_FAILURE);
+    }
 }
 
-void become_daemon() {
-    int pid = fork();
-    if (pid < 0)
-        error("Error in fork():\n" + std::string(strerror(errno)));
-    if (pid != 0)
-        exit(EXIT_SUCCESS);
-    setsid();
-    pid = fork();
-    if (pid < 0) error("Error in fork():\n" + std::string(strerror(errno)));
-    if (pid != 0)
-        exit(EXIT_SUCCESS);
-    pid = getpid();
-    chdir("/");
-    umask(0);
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-    int fd = open("/tmp/netsh.pid", O_WRONLY | O_CREAT);
-    if (fd < 0)
-        error("Error in open():\n" + std::string(strerror(errno)));
-    pid = getpid();
-    dprintf(fd, "%d\n", pid);
-    close(fd);
+ssize_t writeAll(int fd, const void *buf, size_t count) {
+    size_t processed = 0;
+    while (processed < count) {
+        ssize_t writed = write(fd, buf + processed, count - processed);
+        if (writed < 0 && errno != EINTR) {
+            return -1;
+        } else {
+            processed += writed;
+        }
+    }
+    return processed;
 }
 
 #endif // UTILS_H
