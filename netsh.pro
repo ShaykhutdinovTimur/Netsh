@@ -13,5 +13,7 @@ HEADERS += \
     lib/epoll/EpollWrap.h \
     lib/Socket.h \
     lib/Utils.h \
-    lib/Daemonisation.h
+    lib/tcp/TcpServer.h \
+    lib/tcp/TcpSocket.h \
+    lib/logic/ExecServer.h
 

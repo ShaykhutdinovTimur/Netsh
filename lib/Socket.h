@@ -39,13 +39,18 @@ public:
         return socket_ptr->socket;
     }
 
-    void make_nonblocking() {
+    int makeNonblocking() {
         int flags;
-        if ((flags = fcntl(socket_ptr->socket, F_GETFL, 0)) < 0)
-            error("Error in fcntl() (F_GETFL)");
+        if ((flags = fcntl(socket_ptr->socket, F_GETFL, 0)) < 0) {
+            error("Error in fcntl() (F_GETFL)", false);
+            return MY_EXIT_FAILURE;
+        }
         flags |= O_NONBLOCK;
-        if (fcntl(socket_ptr->socket, F_SETFL, flags) < 0)
-            error("Error in fcntl() (F_SETFL)");
+        if (fcntl(socket_ptr->socket, F_SETFL, flags) < 0) {
+            error("Error in fcntl() (F_SETFL)", false);
+            return MY_EXIT_FAILURE;
+        }
+        return MY_EXIT_SUCCESS;
     }
 };
 

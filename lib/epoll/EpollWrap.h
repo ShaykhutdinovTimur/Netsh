@@ -20,16 +20,13 @@ private:
         memset(&event, 0, sizeof(epoll_event));
         event.data.fd = fd;
         event.events = events;
-        if (epoll_ctl(epollFd, CTL_OPTION, fd, &event) == EPOLL_EXIT_FAILURE){
-            return EPOLL_EXIT_FAILURE;
+        if (epoll_ctl(epollFd, CTL_OPTION, fd, &event) == MY_EXIT_FAILURE){
+            return MY_EXIT_FAILURE;
         }
-        return EPOLL_EXIT_SUCCESS;
+        return MY_EXIT_SUCCESS;
     }
 
 public:
-
-    static const int EPOLL_EXIT_FAILURE = -1;
-    static const int EPOLL_EXIT_SUCCESS = 0;
 
     EpollWrap() {
         epollFd = Socket(epoll_create1(0));
@@ -40,7 +37,7 @@ public:
         running = true;
         struct epoll_event events[MAX_EVENTS];
         while (running) {
-            int static const NO_TIMEOUT = EPOLL_EXIT_FAILURE;
+            int static const NO_TIMEOUT = -1;
             int eventsCount = epoll_wait(epollFd, events, MAX_EVENTS, NO_TIMEOUT);
             for (int i = 0; i < eventsCount; i++) {
                 callbacks[events[i].data.fd](events[i].events);
