@@ -146,7 +146,7 @@ public:
         epoll.add(tcpfd, handlerFunction, EPOLLIN | EPOLLET | EPOLLRDHUP);
     }
 
-    ~TcpServer();
+    ~TcpServer() {};
 
 
     void start() {

@@ -33,21 +33,16 @@ class ExecServer {
             QString inf;
             socket->read(inf);
             commands[socket].append(inf);
-            if (isValidCommand(commands[socket])) {
-                int *pipefd = new int[2];
-                if (pipe(pipefd) == -1) {
-                    error("pipe failed", false);
-                }
+            if (isValidCommand(commands[socket])) {                
                 /*
-                 * Piped run of command
-                */
-                delete [] pipefd;
+                 * piped run and answer to client
+                 */
             }
         }
     }
 
     bool isValidCommand(QString& str) {
-        return str.at(str.length() - 1) == "\n";
+        return str.contains("\n", Qt::CaseInsensitive) > 0;
     }
 
     void inline becomeNotGroupLeader() {
@@ -98,10 +93,11 @@ class ExecServer {
 
 
 public:
-    ExecServer(int port) {
-        //pid_t pid = makeSelfDaemon();
-        //writePid(pid, "/tmp/netsh.pid");
-        tcpServer = TcpServer(port, bind(&HttpServer::newRequest, this, std::placeholders::_1, std::placeholders::_2));
+    ExecServer(int port) :
+        tcpServer(port, bind(&ExecServer::newRequest, this, std::placeholders::_1, std::placeholders::_2))
+    {
+        pid_t pid = makeSelfDaemon();
+        writePid(pid, "/tmp/netsh.pid");
     }
 
     void start() {
