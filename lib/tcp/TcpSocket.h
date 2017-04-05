@@ -19,6 +19,8 @@ class TcpSocket {
 
     static const int BUFFER_SIZE = 65536;
     Socket fd;
+    Socket argFd;
+    bool execed;
     EpollWrap* epoll;
     size_t buffersize;
     char buffer[BUFFER_SIZE];
@@ -42,7 +44,6 @@ class TcpSocket {
         }
         buffersize -= count;
         if (buffersize == 0) {
-            epoll->modify(fd, EPOLLIN | EPOLLET | EPOLLRDHUP);
             return MY_EXIT_SUCCESS;
         }
         return MY_EXIT_WAIT;
@@ -55,6 +56,7 @@ public:
         epoll = serv;
         fd = socket;
         buffersize = 0;
+        execed = false;
     }
 
     ~TcpSocket() {}
@@ -91,6 +93,26 @@ public:
         buffersize += size;
         epoll->modify(fd, EPOLLOUT | EPOLLIN | EPOLLET | EPOLLRDHUP);
         return MY_EXIT_SUCCESS;
+    }
+
+    int gfd() {
+        return fd;
+    }
+
+    void setArgFd(int fd) {
+        argFd = Socket(fd);
+    }
+
+    void setArg(const void* buf, size_t size) {
+        writeAll(argFd, buf, size);
+    }
+
+    void setExecuted() {
+        execed = true;
+    }
+
+    bool isExeced() {
+        return execed;
     }
 
     friend class TcpServer;

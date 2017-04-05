@@ -27,6 +27,7 @@ class TcpServer {
 
     void connectionHandler(std::function<void(TcpSocket*, EventType)> newData, Socket fd, int event) {
         if (event & EPOLLRDHUP) {
+            std::cout << "RDHUP happened\n";
             epoll.remove(fd);
             return;
         }
@@ -53,7 +54,7 @@ class TcpServer {
                     }
                 }
 
-                if (infd.makeNonblocking() == MY_EXIT_FAILURE) {
+                if (makeNonblocking(infd) == MY_EXIT_FAILURE) {
                     error("can't make socket nonblocking", false);
                     continue;
                 }
@@ -110,21 +111,22 @@ class TcpServer {
     }
 
     void dataHandler(std::function<void(TcpSocket*, EventType)> dataHandler, Socket fd, int event) {
+        if (event & EPOLLIN) {
+            dataHandler(&*sockets[fd], NEWDATA);
+        }
+        if (event & EPOLLOUT) {
+            if (sockets[fd]->flush() == 0 && sockets[fd]->buffersize > 0) {
+                std::cout << "answered to data socket " << fd << "\n";
+            }
+        }
         if (event & EPOLLRDHUP) {
+            std::cout << "RDHUP in data socket " << fd << "\n";
             dataHandler(&*sockets[fd], HUP);
             deleteSocket(fd);
         } else if (event & EPOLLERR) {
+            std::cout << "ERR in data socket " << fd << "\n";
             dataHandler(&*sockets[fd], ERROR);
             deleteSocket(fd);
-        } else {
-            if (event & EPOLLIN) {
-                dataHandler(&*sockets[fd], NEWDATA);
-            }
-            if (event & EPOLLOUT) {
-                if (sockets[fd]->flush() == 0) {
-                    deleteSocket(fd);
-                }
-            }
         }
     }
 
@@ -135,7 +137,7 @@ public:
         if (tcpfd == MY_EXIT_FAILURE) {
             error("can't create or bind socket, perhaps port busy");
         }
-        if (tcpfd.makeNonblocking() == MY_EXIT_FAILURE) {
+        if (makeNonblocking(tcpfd) == MY_EXIT_FAILURE) {
             error("can't make server socket nonblocking");
         }
         if (listen(tcpfd, QUEUE_SIZE) == MY_EXIT_FAILURE) {

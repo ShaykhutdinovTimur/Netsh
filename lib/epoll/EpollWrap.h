@@ -13,7 +13,7 @@ private:
     int const MAX_EVENTS = 50;
     bool running;
     Socket epollFd;
-    QMap<Socket, std::function<void(int)>> callbacks;
+    QMap<int, std::function<void(int)>> callbacks;
 
     int epollCtl(Socket fd, int events, int CTL_OPTION) {
         struct epoll_event event;
@@ -50,7 +50,7 @@ public:
     }
 
     ~EpollWrap() {
-        QMap<Socket, std::function<void(int)>> temp = callbacks;
+        QMap<int, std::function<void(int)>> temp = callbacks;
         for (auto cur = temp.begin(); cur != temp.end(); cur++) {
             cur.value()(EPOLLRDHUP);
         }
@@ -62,6 +62,7 @@ public:
     }
 
     int remove(Socket fd) {
+        std::cout << fd << " socket has been removed from epoll\n";
         if (isListening(fd)) {
             callbacks.remove(fd);
         }
