@@ -93,13 +93,16 @@ void newRequest(TcpSocket* socket, EventType type) {
             socket->setArg(inf.toStdString().c_str(), inf.length());
         } else {
             commands[socket].append(inf);
-            if (isValidCommand(commands[socket])) {
+            int pos = commands[socket].indexOf("\n", 0, Qt::CaseInsensitive);
+            if (pos > 0) {
                 socket->setExecuted();
                 std::cout << commands[socket].toStdString() << " input runned\n";
-                std::string commandsStr = commands[socket].toStdString().substr(0, commands[socket].length() - 1);
+                std::string commandsStr = commands[socket].toStdString().substr(0, pos);
+                std::string argBeg = commands[socket].toStdString().substr(pos + 1, commands[socket].length() - 1);
                 std::string result = pipedRun(split(commandsStr, '|'), socket);
                 commands[socket].clear();
                 socket->write(result.data(), result.length());
+                socket->setArg(argBeg.data(), argBeg.length());
             }
         }
     }
@@ -159,7 +162,6 @@ void chld_handler(int signum, siginfo_t *info, void*) {
     std::cout << pid << " has been closed" << std::endl;
     if (wait_child.count(pid) > 0) {        
         int cfd = wait_child[pid];
-        std::cout << cfd << " has been closed by handler of process with pid=" << pid << "\n";
         close(cfd);
         wait_child.erase(pid);
     }

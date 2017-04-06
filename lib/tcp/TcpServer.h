@@ -134,6 +134,7 @@ public:
 
     TcpServer(int port, std::function<void(TcpSocket*, EventType)> newData) {
         Socket tcpfd = createAndBind(port);
+        std::cout << "tcp server fd created\n";
         if (tcpfd == MY_EXIT_FAILURE) {
             error("can't create or bind socket, perhaps port busy");
         }

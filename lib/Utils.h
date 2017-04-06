@@ -13,10 +13,6 @@ static const int MY_EXIT_FAILURE = -1;
 static const int MY_EXIT_WAIT = 1;
 static const int MY_EXIT_SUCCESS = 0;
 
-bool isValidCommand(QString& str) {
-    return str.contains("\n", Qt::CaseInsensitive) > 0;
-}
-
 bool isQuot(char c) {
     return c == '\"' || c == '\'' || c == '`';
 }
@@ -41,7 +37,7 @@ std::vector<std::string> split(std::string str, char separator) {
                 result.push_back(curString);
             }
             curString = "";
-        } else curString += str[i];
+        } else { curString += str[i]; }
     }
     return result;
 }

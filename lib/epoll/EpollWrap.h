@@ -28,8 +28,9 @@ private:
 
 public:
 
-    EpollWrap() {
+    EpollWrap() {        
         epollFd = Socket(epoll_create1(0));
+        std::cout << "epoll fd created\n";
         running = false;
     }
 
